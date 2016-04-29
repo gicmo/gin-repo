@@ -17,7 +17,7 @@ func main() {
 Usage:
   gin-git show-pack <pack>
   gin-git show-delta <pack> <sha1>
-  gin-git cat-file <sha1>
+  gin-git cat-file [-p] <sha1>
   gin-git rev-parse <ref>
  
   gin-git -h | --help
@@ -44,7 +44,12 @@ Options:
 		showDelta(repo, args["<pack>"].(string), args["<sha1>"].(string))
 	} else if oid, ok := args["<sha1>"].(string); ok {
 
-		catFile(repo, oid)
+		prettyprint := false
+		if val, ok := args["-p"].(bool); ok && val {
+			prettyprint = true
+		}
+
+		catFile(repo, oid, prettyprint)
 	}
 }
 
@@ -69,7 +74,7 @@ func revParse(repo *git.Repository, refstr string) {
 	fmt.Printf("  └─ SHA1: %s\n", idstr)
 }
 
-func catFile(repo *git.Repository, idstr string) {
+func catFile(repo *git.Repository, idstr string, prettyprint bool) {
 	id, err := git.ParseSHA1(idstr)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Invalid object id: %v", err)
@@ -83,7 +88,12 @@ func catFile(repo *git.Repository, idstr string) {
 		os.Exit(1)
 	}
 
-	printObject(obj, "")
+	if prettyprint {
+		obj.Print(os.Stdout)
+	} else {
+		printObject(obj, "")
+	}
+
 	obj.Close()
 }
 
