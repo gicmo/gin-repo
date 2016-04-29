@@ -99,6 +99,8 @@ type Object interface {
 	Type() ObjectType
 	Size() int64
 
+	Print(io.Writer)
+
 	io.Closer
 }
 
